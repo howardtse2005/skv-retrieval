@@ -32,7 +32,7 @@ Liu et al. (2023) demonstrated a U-shaped performance curve in long-context retr
 
 ### 3.1 Design Rationale
 
-Following Liu et al. (2023), we use a synthetic KV retrieval task to isolate exact-match retrieval from natural-language reasoning. Unlike Liu et al., who used random UUIDs for values, we retain readable value prefixes while using compact numeric subject IDs and unique four-digit suffixes to introduce a controlled manipulation of semantic similarity.
+Following Liu et al. (2023), we use a synthetic KV retrieval task to isolate exact-match retrieval from natural-language reasoning. Unlike Liu et al., who used random UUIDs for values, we retain readable value prefixes while using compact numeric subject IDs and controlled semantic similarity to introduce a controlled manipulation of semantic similarity.
 
 **Advantages of meaningful triples:**
 
@@ -72,7 +72,7 @@ Each example consists of:
 ```json
 {
   "ordered_kv_records": [
-    ["Alice", "favorite color", "red-9f2c7a1b4e8d6035c1a9f0b7e2d4a6c8"],
+    ["Alice", "favorite color", "red"],
     ["Bob", "date of birth", "29 June 2004"],
     ["Carol", "pet name", "Fluffy"],
     ...
@@ -97,21 +97,17 @@ Each example consists of:
 | Key type | Value format | Example |
 |---|---|---|
 | `date of birth` | DD Month YYYY | "29 June 2004" |
-| `favorite color` | Color word + four-digit suffix | "red-4827" |
-| `pet name` | Pet name + four-digit suffix | "Fluffy-1539" |
-| `phone number` | Phone number + four-digit suffix | "555-0100-6042" |
-| `employee ID` | Employee ID + four-digit suffix | "A7X3B9-2718" |
+| `favorite color` | Color word | "red" |
+| `pet name` | Pet name | "Fluffy" |
+| `phone number` | Excluded from high similarity | — |
+| `employee ID` | Excluded from high similarity | — |
 
-For **high similarity**, all KV pairs use one key type with distinct values;
-the key type rotates across examples so all 100 key types are represented.
-Non-date values retain their readable prefixes and append the unique suffix.
-Each key has exactly eight reusable base values. For example,
-favorite color uses `red`, `purple`, and `green` before the suffix.
+For **high similarity**, all KV pairs use one shared-attribute key type and
+cycle through all eight reusable base values. One-to-one mappings are excluded
+because their values identify individual subjects rather than shared attributes.
 In low-similarity datasets, suffixes are omitted: size 75 uses 75 categories,
 size 140 uses all 100 categories with at most two records per category, and
-size 300 uses all 100 categories exactly three times. High-similarity datasets
-retain the four-digit suffix and use all eight base values per key before
-cycling.
+size 300 uses all 100 categories exactly three times.
 
 For **low similarity**, KV pairs cycle through the 100 key types; when a
 haystack is larger than 100 records, the category cycle repeats.

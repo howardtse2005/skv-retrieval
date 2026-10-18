@@ -3,7 +3,16 @@ import random
 import re
 from collections import Counter
 
-from generate_dataset import BASE_VALUES, KEY_TYPES, POSITIONS, generate_dataset, shuffled_values, value_for
+from generate_dataset import (
+    BASE_VALUES,
+    HIGH_SIMILARITY_EXCLUDED_KEYS,
+    HIGH_SIMILARITY_KEYS,
+    KEY_TYPES,
+    POSITIONS,
+    generate_dataset,
+    shuffled_values,
+    value_for,
+)
 from run_benchmark import SYSTEM_PROMPT, build_prompt, score_response
 
 
@@ -19,7 +28,10 @@ def test_dataset_has_target_at_declared_position(tmp_path):
         assert all(re.fullmatch(r"Subject_[0-9]{4}", subject) for subject in subjects)
         assert subjects != sorted(subjects)
         assert row["ordered_kv_records"][row["position"]][0:2] == row["target_key"]
-        assert sum(record[2] == row["target_value"] for record in row["ordered_kv_records"]) == 1
+        assert sum(
+            record[0:2] == row["target_key"]
+            for record in row["ordered_kv_records"]
+        ) == 1
         assert len({record[1] for record in row["ordered_kv_records"]}) == 1
 
 
@@ -50,14 +62,16 @@ def test_high_similarity_covers_all_key_types_and_shuffles_values(tmp_path):
     assert BASE_VALUES["favorite color"][:3] == ("red", "purple", "green")
     paths = generate_dataset(tmp_path, sizes=(75,), examples_per_position=100, seed=42)
     rows = [json.loads(line) for line in paths[0].read_text().splitlines()]
-    assert {row["ordered_kv_records"][0][1] for row in rows} == set(KEY_TYPES)
+    assert {row["ordered_kv_records"][0][1] for row in rows} == set(HIGH_SIMILARITY_KEYS)
     for row in rows:
         values = [record[2] for record in row["ordered_kv_records"]]
-        assert len(values) == len(set(values))
         key = row["ordered_kv_records"][0][1]
+        assert key not in HIGH_SIMILARITY_EXCLUDED_KEYS
         if key != "date of birth":
-            prefixes = [value.rsplit("-", 1)[0] for value in values]
-            assert set(prefixes) == set(BASE_VALUES[key])
+            assert all(value in BASE_VALUES[key] for value in values)
+            assert set(values) == set(BASE_VALUES[key])
+        else:
+            assert set(values) == set(BASE_VALUES[key])
 
     keys = ["phone number"] * 75
     generated_order = [value_for("phone number", i) for i in range(75)]
@@ -78,10 +92,7 @@ def test_five_positions_and_compact_numeric_non_date_values(tmp_path):
             row = json.loads(line)
             for subject, key, value in row["ordered_kv_records"]:
                 if key != "date of birth" and is_high:
-                    assert re.fullmatch(r".+-[0-9]{4}", value)
-                    prefix, suffix = value.rsplit("-", 1)
-                    assert prefix in BASE_VALUES[key]
-                    assert len(suffix) == 4
+                    assert value in BASE_VALUES[key]
                 elif key != "date of birth":
                     assert value in BASE_VALUES[key]
 
@@ -102,6 +113,22 @@ def test_low_similarity_uses_all_categories_and_base_values(tmp_path):
                 assert value in BASE_VALUES[key]
 
 
+def test_low_similarity_randomizes_single_occurrence_values(tmp_path):
+    paths = generate_dataset(
+        tmp_path, sizes=(75,), conditions=("low",),
+        examples_per_position=100, seed=42
+    )
+    low_path = next(path for path in paths if "_low_beginning" in path.name)
+    vehicle_values = {
+        record[2]
+        for line in low_path.read_text().splitlines()
+        for record in json.loads(line)["ordered_kv_records"]
+        if record[1] == "vehicle type"
+    }
+    assert len(vehicle_values) > 1
+    assert vehicle_values <= set(BASE_VALUES["vehicle type"])
+
+
 def test_prompt_and_scoring():
     example = {
         "ordered_kv_records": [["Alice", "date of birth", "1 January 2000"]],
@@ -109,7 +136,7 @@ def test_prompt_and_scoring():
     }
     assert "Alice's date of birth is 1 January 2000" in build_prompt(example)
     assert "ANSWER: <one answer>" in SYSTEM_PROMPT
-    assert "favorite color is red-" in SYSTEM_PROMPT
+    assert "favorite color is red" in SYSTEM_PROMPT
     assert "'ANSWER: red'" in SYSTEM_PROMPT
     assert "ANSWER:" not in build_prompt(example)
     assert score_response("ANSWER: 1 January 2000", "1 January 2000") == (True, "correct")

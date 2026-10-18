@@ -39,6 +39,15 @@ KEY_TYPES = (
     "security question", "preferred contact method", "customer tier",
     "subscription plan", "account status",
 )
+HIGH_SIMILARITY_EXCLUDED_KEYS = frozenset({
+    "phone number", "employee ID", "street address", "email address",
+    "social handle", "passport number", "license number", "insurance number",
+    "emergency phone", "room number", "license plate", "flight number",
+    "frequent flyer number", "tracking number", "project code", "desk number",
+})
+HIGH_SIMILARITY_KEYS = tuple(
+    key for key in KEY_TYPES if key not in HIGH_SIMILARITY_EXCLUDED_KEYS
+)
 BASE_VALUES = {
     "date of birth": ("1 January 1950", "15 June 1975", "28 November 2000", "4 March 1925", "9 September 1940", "22 December 1965", "11 February 1985", "30 July 2010"),
     "favorite color": ("red", "purple", "green", "blue", "yellow", "orange", "pink", "brown"),
@@ -185,9 +194,21 @@ def shuffled_values(
     example_index: int,
     rng: random.Random,
     include_suffix: bool = True,
+    ensure_unique: bool = False,
 ) -> list[str]:
-    """Load and shuffle values while cycling through all eight base values."""
+    """Load shuffled, distinct base values for each key in this haystack."""
     values_by_key: dict[str, list[str]] = {key: [] for key in KEY_TYPES}
+    key_counts = {key: keys.count(key) for key in KEY_TYPES}
+    base_indices: dict[str, list[int]] = {}
+    for key, count in key_counts.items():
+        if count == 0:
+            continue
+        pool_size = len(BASE_VALUES[key])
+        indices = []
+        while len(indices) < count:
+            indices.extend(rng.sample(range(pool_size), pool_size))
+        base_indices[key] = indices[:count]
+
     occurrences = {key: 0 for key in KEY_TYPES}
     for index, key in enumerate(keys):
         values_by_key[key].append(
@@ -195,10 +216,31 @@ def shuffled_values(
                 key,
                 example_index * len(keys) + index,
                 include_suffix,
-                base_index=occurrences[key],
+                base_index=base_indices[key][occurrences[key]],
             )
         )
         occurrences[key] += 1
+    if ensure_unique:
+        present_keys = [key for key in KEY_TYPES if key_counts[key]]
+        for _ in range(100):
+            used_values: set[str] = set()
+            repaired_by_key: dict[str, list[str]] = {}
+            for key in present_keys:
+                alternatives = list(BASE_VALUES[key])
+                rng.shuffle(alternatives)
+                available = [
+                    value for value in alternatives if value not in used_values
+                ]
+                count = key_counts[key]
+                if len(available) < count:
+                    break
+                repaired_by_key[key] = available[:count]
+                used_values.update(repaired_by_key[key])
+            else:
+                values_by_key.update(repaired_by_key)
+                break
+        else:
+            raise ValueError("Could not assign globally unique low-similarity values")
     for values in values_by_key.values():
         rng.shuffle(values)
     offsets = {key: 0 for key in KEY_TYPES}
@@ -222,16 +264,17 @@ def make_example(
     subject_numbers = rng.sample(range(10000), size)
     subjects = [f"Subject_{number:04d}" for number in subject_numbers]
     if condition == "high":
-        # High similarity uses every key type across examples, but one key type
-        # consistently appears on every line within an individual haystack.
-        key_type = KEY_TYPES[example_index % len(KEY_TYPES)]
+        # High similarity rotates through shared attributes only. Identifiers
+        # and other one-to-one mappings are excluded from this condition.
+        key_type = HIGH_SIMILARITY_KEYS[example_index % len(HIGH_SIMILARITY_KEYS)]
         keys = [key_type] * size
     else:
         # Use every category when possible, with no category appearing more
         # than ceil(size / len(KEY_TYPES)) times.
         keys = [KEY_TYPES[i % len(KEY_TYPES)] for i in range(size)]
     values = shuffled_values(
-        keys, example_index, rng, include_suffix=condition == "high"
+        keys, example_index, rng, include_suffix=False,
+        ensure_unique=condition == "low",
     )
     records = [[subject, key, value]
                for subject, key, value in zip(subjects, keys, values)]
@@ -243,7 +286,7 @@ def make_example(
     values = [record[2] for record in records]
     if len(subjects) != len(set(subjects)):
         raise AssertionError("Generated subjects are not unique")
-    if len(values) != len(set(values)):
+    if condition == "low" and len(values) != len(set(values)):
         raise AssertionError("Generated values are not unique")
     if records[target_position] != target:
         raise AssertionError("Target was not placed at the requested position")

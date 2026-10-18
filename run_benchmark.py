@@ -23,14 +23,12 @@ SYSTEM_PROMPT = (
     "You are given a list of subject-key-value records.\n"
     "Each record is formatted as: Subject's key is value.\n"
     "Answer the question using only the records.\n"
-    "Scan every record before answering; the matching subject-key record is "
-    "present exactly once, even when the subject identifier is compact.\n"
     "Respond with exactly one line and nothing else, using this format:\n"
     "ANSWER: <one answer>\n"
-    "Do not provide reasoning, explanation, alternatives, a shortened value, "
+    "Do not provide reasoning, explanation, "
     "full sentences, or additional lines.\n"
-    "For example, 'ANSWER: red-4827', \n"
-    "not 'ANSWER: Subject_1539's favorite color is red-4827' or 'ANSWER: red'\n"
+    "For example, 'ANSWER: red', "
+    "not 'ANSWER: Subject_1539's favorite color is red'\n"
     "ANSWER:"
 )
 

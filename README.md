@@ -8,17 +8,19 @@ Records are serialized as natural-language statements such as
 `Subject_4827's date of birth is 4 March 1950`.
 Subject IDs use a `Subject_` prefix followed by a unique four-digit numeric
 identifier. High-similarity examples use
-one consistent key type per haystack, while rotating through all 100 key types
-across examples. Low-similarity examples mix the 100 key types. Values are
+one consistent shared-attribute key type per haystack, while rotating through
+the eligible key types across examples. Low-similarity examples mix the 100
+key types. Values are
 generated into key-specific pools and shuffled before records are built. Dates remain human-readable; every non-date value keeps a
-human-readable prefix and appends a unique four-digit numeric suffix after a
-dash, such as `red-4827`.
+human-readable values such as `red` without a numeric suffix. High-similarity
+datasets exclude one-to-one subject mappings such as phone numbers, employee
+IDs, addresses, email addresses, and tracking identifiers.
 Each key has exactly eight reusable base values; for example,
 favorite colors cycle through `red`, `purple`, and `green`.
 Low-similarity datasets omit the numeric suffix: size 75 uses 75 distinct
 categories, size 140 uses all 100 categories with at most two records per
 category, and size 300 uses every category exactly three times. High-similarity
-datasets retain numeric suffixes and cycle through all eight base values.
+datasets cycle through all eight base values for the selected shared attributes.
 Subject IDs are also independently shuffled in every haystack and remain
 unique, so neither subjects nor values reveal an ordered index.
 
@@ -75,9 +77,8 @@ Inference disables model thinking (`think=False`) and uses 8,192 tokens for
 line in the form `ANSWER: <one answer>`. Responses are scored as `correct`,
 `wrong_answer`, `wrong_format`, or `no_answer`; Ollama/API failures are
 recorded separately as `api_error`.
-The system prompt requires copying the complete literal value, including
-numeric or textual suffixes such as `red-042`, rather than returning only a
-semantic prefix such as `red`.
+The system prompt requires copying the complete literal value rather than
+returning an abbreviated or inferred answer.
 
 The benchmark intentionally does not silently replace an unavailable model:
 the fallback substitution is reported in the run metadata and console output.
