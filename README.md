@@ -1,7 +1,7 @@
-# Target Placement in Synthetic KV Retrieval
+# Target Placement in Synthetic SKV Retrieval
 
 This project implements the experiment described in `plan.md`. It generates
-reproducible synthetic subject-key-value haystacks, evaluates local Ollama
+reproducible synthetic subject-key-value (SKV) haystacks, evaluates local Ollama
 models, scores responses, and produces summary tables and figures.
 
 Records are serialized as natural-language statements such as
