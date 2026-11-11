@@ -1,6 +1,6 @@
 # Target Placement in Synthetic SKV Retrieval
 
-This project generates reproducible synthetic subject-key-value (SKV) haystacks, evaluates local Ollama
+This project generates reproducible synthetic subject-key-value (SKV) haystacks to evaluate the effects of both target information positioning and semantic similarity of distractors. It evaluates local Ollama
 models, scores responses, and produces summary tables and figures.
 
 Records are serialized as natural-language statements such as
