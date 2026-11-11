@@ -1,7 +1,6 @@
 # Target Placement in Synthetic SKV Retrieval
 
-This project implements the experiment described in `plan.md`. It generates
-reproducible synthetic subject-key-value (SKV) haystacks, evaluates local Ollama
+This project generates reproducible synthetic subject-key-value (SKV) haystacks, evaluates local Ollama
 models, scores responses, and produces summary tables and figures.
 
 Records are serialized as natural-language statements such as
@@ -73,9 +72,8 @@ seeded (`42` by default), and each example records its own seed-independent
 position and target metadata.
 
 Inference disables model thinking (`think=False`) and uses 8,192 tokens for
-140-record prompts and 16,384 tokens for 300-record prompts. It requires exactly one
-line in the form `ANSWER: <one answer>`. Responses are scored as `correct`,
-`wrong_answer`, `wrong_format`, or `no_answer`; Ollama/API failures are
+140-record prompts and 16,384 tokens for 300-record prompts. Responses are scored as `correct`,
+`wrong_answer`, or `no_answer`; Ollama/API failures are
 recorded separately as `api_error`.
 The system prompt requires copying the complete literal value rather than
 returning an abbreviated or inferred answer.
