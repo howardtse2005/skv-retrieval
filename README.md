@@ -38,26 +38,26 @@ documented proxy.
 
 ## Workflow
 
-Generate the 30 datasets (100 examples per size, similarity condition, and
+1. Generate the 30 datasets (100 examples per size, similarity condition, and
 target position):
 
 ```bash
 python generate_dataset.py --output-dir data
 ```
 
-Run a 300-trial pilot (10 examples per dataset):
+2. Run a 300-trial pilot (10 examples per dataset):
 
 ```bash
 python run_benchmark.py --data-dir data --output-dir results --pilot
 ```
 
-Run the full benchmark for all available models:
+or run the full benchmark for all available models:
 
 ```bash
 python run_benchmark.py --data-dir data --output-dir results
 ```
 
-Analyse one or more result files:
+3. Analyse one or more result files:
 
 ```bash
 python analyze_results.py --results-dir results --output-dir analysis
