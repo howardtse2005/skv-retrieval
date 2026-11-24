@@ -140,8 +140,14 @@ def test_prompt_and_scoring():
     assert "'ANSWER: red'" in SYSTEM_PROMPT
     assert "ANSWER:" not in build_prompt(example)
     assert score_response("ANSWER: 1 January 2000", "1 January 2000") == (True, "correct")
+    assert score_response("1 January 2000", "1 January 2000") == (True, "correct")
+    assert score_response(
+        "Alice's date of birth is 1 January 2000", "1 January 2000"
+    ) == (True, "correct")
+    assert score_response(
+        "The answer is 1 January 2000.", "1 January 2000"
+    ) == (True, "correct")
     assert score_response("ANSWER: 1 January 1999", "1 January 2000") == (False, "wrong_answer")
-    assert score_response("The answer is 1 January 2000.", "1 January 2000") == (False, "wrong_format")
     assert score_response("I don't know.", "1 January 2000") == (False, "no_answer")
     assert score_response("ANSWER: 1 January 2000\nANSWER: extra", "1 January 2000") == (
         False, "wrong_format"

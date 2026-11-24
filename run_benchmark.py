@@ -15,21 +15,20 @@ from typing import Any
 import ollama
 from tqdm import tqdm
 
-MODEL_CANDIDATES = ("qwen3:8b", "llama3.1:8b", "qwen3.5:9b")
-MODEL_FALLBACK = "qwen3:14b"
+MODEL_CANDIDATES = ("ministral-3:3b", "qwen2.5:3b", "llama3.2:3b", "gemma3:1b", "qwen3:1.7b", "llama3.2:1b")
+
 NUM_CTX = {75: 4096, 140: 8192, 300: 16384}
 ANSWER_PATTERN = re.compile(r"^ANSWER: ([^\r\n]+)$")
+FULL_SENTENCE_PATTERN = re.compile(r"^.+?'s .+? is (.+)$", re.DOTALL)
 SYSTEM_PROMPT = (
     "You are given a list of subject-key-value records.\n"
     "Each record is formatted as: Subject's key is value.\n"
     "Answer the question using only the records.\n"
     "Respond with exactly one line and nothing else, using this format:\n"
     "ANSWER: <one answer>\n"
-    "Do not provide reasoning, explanation, "
-    "full sentences, or additional lines.\n"
+    "Do not provide reasoning, explanation, full sentences, or additional lines.\n"
     "For example, 'ANSWER: red', "
-    "not 'ANSWER: Subject_1539's favorite color is red'\n"
-    "ANSWER:"
+    "not 'ANSWER: Subject_1539's favorite color is red' or 'red'\n"
 )
 
 
@@ -50,9 +49,6 @@ def resolve_models(requested: list[str] | None) -> tuple[list[str], dict[str, st
     for model in requested:
         if model in installed:
             resolved.append(model)
-        elif model == "qwen3.5:9b" and MODEL_FALLBACK in installed:
-            resolved.append(MODEL_FALLBACK)
-            substitutions[model] = MODEL_FALLBACK
         else:
             print(f"Skipping unavailable model: {model}")
     if not resolved:
@@ -88,10 +84,19 @@ def score_response(response: str, target_value: str, error: str | None = None) -
     if not response or re.search(r"\b(?:don't know|do not know|cannot|unable|no answer)\b",
                                 response, re.I):
         return False, "no_answer"
-    match = ANSWER_PATTERN.fullmatch(response)
-    if match is None:
+    if "\n" in response or "\r" in response:
         return False, "wrong_format"
-    if match.group(1).strip().casefold() == target_value.strip().casefold():
+    candidate = response
+    answer_match = ANSWER_PATTERN.fullmatch(response)
+    if answer_match:
+        candidate = answer_match.group(1).strip()
+    else:
+        sentence_match = FULL_SENTENCE_PATTERN.fullmatch(response)
+        if sentence_match:
+            candidate = sentence_match.group(1).strip().rstrip(".")
+        elif response.casefold().startswith("the answer is "):
+            candidate = response[len("The answer is "):].strip().rstrip(".")
+    if candidate.casefold() == target_value.strip().casefold():
         return True, "correct"
     return False, "wrong_answer"
 
@@ -133,7 +138,7 @@ def run_model(model: str, examples: list[dict[str, Any]], output: Path,
                 "temperature": 0,
                 "top_p": 1,
                 "seed": seed,
-                "num_predict": 20,
+                "num_predict": 15,
             }
             response_text = ""
             api_error = None

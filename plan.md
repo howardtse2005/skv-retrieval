@@ -145,6 +145,11 @@ Liu et al. (2023) varied position across a fine-grained grid. We will use a simp
 All five positions are primary: **Beginning, 25th percentile, 50th
 percentile, 75th percentile, and End**.
 
+Analysis preserves this order. Accuracy is plotted for all three models in a
+two three-panel figures for each haystack size (75, 140, and 300): one for
+the three 3B models and one for the three 1B-group models, including the 1.7B
+model. Individual model charts are not generated.
+
 **Step 5: Serialise to prompt format.**
 
 The prompt template (adapted from Liu et al., 2023) is:

@@ -7,8 +7,23 @@ import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 import pandas as pd
 import seaborn as sns
+
+POSITION_LABELS = [
+    "beginning",
+    "25th_percentile",
+    "50th_percentile",
+    "75th_percentile",
+    "end",
+]
+POSITION_TICKS = ["Beginning", "25th", "50th", "75th", "End"]
+SIMILARITY_PALETTE = {"high": "#4c72b0", "low": "#dd8452"}
+MODEL_GROUPS = {
+    "1B": ("gemma3:1b", "llama3.2:1b", "qwen3:1.7b"),
+    "3B": ("llama3.2:3b", "ministral-3:3b", "qwen2.5:3b"),
+}
 
 
 def load_results(results_dir: Path) -> pd.DataFrame:
@@ -21,7 +36,7 @@ def load_results(results_dir: Path) -> pd.DataFrame:
     frame = pd.DataFrame(rows)
     frame["position_label"] = pd.Categorical(
         frame["position_label"],
-        categories=["beginning", "early", "middle", "late", "end"],
+        categories=POSITION_LABELS,
         ordered=True,
     )
     return frame
@@ -29,6 +44,8 @@ def load_results(results_dir: Path) -> pd.DataFrame:
 
 def write_analysis(frame: pd.DataFrame, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
+    for path in output_dir.glob("accuracy_by_position*.png"):
+        path.unlink()
     summary = (frame.groupby(["model", "size", "similarity", "position_label"],
                              observed=True)["correct"]
                .agg(["mean", "count", "sum"])
@@ -41,18 +58,45 @@ def write_analysis(frame: pd.DataFrame, output_dir: Path) -> None:
               .reset_index(name="rate"))
     errors.to_csv(output_dir / "error_type_rates.csv", index=False)
 
-    sns.set_theme(style="whitegrid")
-    for model, subset in frame.groupby("model"):
-        plt.figure(figsize=(9, 5))
-        sns.lineplot(data=subset, x="position_label", y="correct", hue="similarity",
-                     estimator="mean", errorbar=("ci", 95), marker="o")
-        plt.ylim(0, 1.05)
-        plt.ylabel("Accuracy")
-        plt.xlabel("Target position")
-        plt.title(f"Accuracy by target position: {model}")
-        plt.tight_layout()
-        plt.savefig(output_dir / f"accuracy_by_position_{model.replace(':', '_')}.png", dpi=180)
-        plt.close()
+    sns.set_theme(style="darkgrid")
+    for size in sorted(frame["size"].dropna().unique()):
+        size_frame = frame[frame["size"] == size]
+        for group_name, group_models in MODEL_GROUPS.items():
+            group_frame = size_frame[size_frame["model"].isin(group_models)]
+            models = [model for model in group_models if model in set(group_frame["model"])]
+            if not models:
+                continue
+            fig, axes = plt.subplots(1, len(models), figsize=(5 * len(models), 4.5),
+                                     sharey=False, squeeze=False)
+            axes = axes[0]
+            for axis, model in zip(axes, models):
+                subset = group_frame[group_frame["model"] == model]
+                sns.lineplot(
+                    data=subset, x="position_label", y="correct",
+                    hue="similarity", estimator="mean", errorbar=None,
+                    marker="o", palette=SIMILARITY_PALETTE, ax=axis,
+                )
+                axis.set_ylim(0.2, 1.01)
+                axis.yaxis.set_major_formatter(PercentFormatter(1.0))
+                axis.set_title(model)
+                axis.set_xlabel("Target position")
+                axis.set_ylabel("Accuracy (%)")
+                axis.set_xticks(range(len(POSITION_LABELS)))
+                axis.set_xticklabels(POSITION_TICKS)
+                if axis is not axes[0] and axis.legend_:
+                    axis.legend_.remove()
+            handles, labels = axes[0].get_legend_handles_labels()
+            if axes[0].legend_:
+                axes[0].legend_.remove()
+            fig.suptitle(f"Accuracy by target position ({size} key-value pairs, {group_name} models)")
+            fig.legend(handles, labels, loc="lower center", ncol=len(labels),
+                       bbox_to_anchor=(0.5, 0.01))
+            fig.tight_layout(rect=(0, 0.1, 1, 0.95))
+            fig.savefig(
+                output_dir / f"accuracy_by_position_{size}_{group_name.lower()}.png",
+                dpi=180,
+            )
+            plt.close(fig)
 
     heatmap = (frame.groupby(["size", "similarity", "position_label"], observed=True)["correct"]
                .mean().reset_index()
