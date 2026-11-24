@@ -1,34 +1,14 @@
 # Target Placement in Synthetic SKV Retrieval
 
-This project generates reproducible synthetic subject-key-value (SKV) haystacks to evaluate the effects of both target information positioning and semantic similarity of distractors. It evaluates local Ollama
-models, scores responses, and produces summary tables and figures.
+This repo contains the code implementation for my PSYC2036 course's final essay. The report:
 
-Records are serialized as natural-language statements such as
-`Subject_4827's date of birth is 4 March 1950`.
-Subject IDs use a `Subject_` prefix followed by a unique four-digit numeric
-identifier. High-similarity examples use
-one consistent shared-attribute key type per haystack, while rotating through
-the eligible key types across examples. Low-similarity examples mix the 100
-key types. Values are
-generated into key-specific pools and shuffled before records are built. Dates remain human-readable; every non-date value keeps a
-human-readable values such as `red` without a numeric suffix. High-similarity
-datasets exclude one-to-one subject mappings such as phone numbers, employee
-IDs, addresses, email addresses, and tracking identifiers.
-Each key has exactly eight reusable base values; for example,
-favorite colors cycle through `red`, `purple`, and `green`.
-Low-similarity datasets omit the numeric suffix: size 75 uses 75 distinct
-categories, size 140 uses all 100 categories with at most two records per
-category, and size 300 uses every category exactly three times. High-similarity
-datasets cycle through all eight base values for the selected shared attributes.
-Subject IDs are also independently shuffled in every haystack and remain
-unique, so neither subjects nor values reveal an ordered index.
 
 ## Setup
 
-The intended environment is `kv_pos` with Python 3.12:
+The intended environment is `skv_retrieval` with Python 3.12:
 
 ```bash
-conda activate kv_pos
+conda activate skv_retrieval
 pip install -r requirements.txt
 ```
 
