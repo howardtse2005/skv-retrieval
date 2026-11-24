@@ -1,6 +1,11 @@
 # Target Placement in Synthetic SKV Retrieval
 
-This repo contains the code implementation for my HKU Department of Psychology's PSYC2036 final essay. The report:
+This repo contains the code implementation for my HKU Department of Psychology's PSYC2036 final essay. 
+
+Abstract:
+Large language models (LLMs) demonstrate a well-documented "lost-in-the-middle" effect: retrieval accuracy is highest when relevant information appears at the beginning or end of a long context and lowest when it is buried in the middle. However, the mechanism underlying this positional bias remains contested. One account attributes it to architectural attention sink at sequence boundaries (positional bias), while another implicates semantic interference from surrounding distractors (similarity bias). This study manipulates both target position (beginning, 25th percentile, 50th percentile, 75th percentile, end) and distractor similarity (high vs. low semantic similarity) in a synthetic key-value retrieval task (subject-key-value format) administered to six open-weight models via Ollama, three belong to 1B model group and three belong to 3B group. Most models showed a beginning-position advantage, with lower accuracy at the middle and end positions in several conditions. Crucially, the middle-end position deficits were larger under high-similarity distractors than under low-similarity distractors, consistent with an additional semantic similarity bias on top of positional bias. These findings suggest that positional bias in LLM retrieval is not merely a function of token index but is modulated by the semantic competition between the target and its surrounding context. Therefore, we propose a synthetic dataset design with subject-key-value (SKV) triples to manipulate only the information positions or relative semantic similarity to test their isolated effects on LLM retrieval accuracy.
+
+The full report:
 
 [View the report PDF](./HowardTse_PSYC2036A_Essay.pdf)
 ## Setup
