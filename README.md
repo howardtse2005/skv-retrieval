@@ -1,6 +1,6 @@
 # Target Placement in Synthetic SKV Retrieval
 
-This repo contains the code implementation for my PSYC2036 course's final essay. The report:
+This repo contains the code implementation for my HKU Department of Psychology's PSYC2036 final essay. The report:
 
 
 ## Setup
