@@ -1,0 +1,45 @@
+                 Generalized Linear Model Regression Results                  
+==============================================================================
+Dep. Variable:                correct   No. Observations:                18000
+Model:                            GLM   Df Residuals:                    17970
+Model Family:                Binomial   Df Model:                           29
+Link Function:                  Logit   Scale:                          1.0000
+Method:                          IRLS   Log-Likelihood:                -5757.6
+Date:                Tue, 03 Nov 2026   Deviance:                       11515.
+Time:                        18:09:18   Pearson chi2:                 1.80e+04
+No. Iterations:                     7   Pseudo R-squ. (CS):            0.07756
+Covariance Type:            nonrobust                                         
+============================================================================================================================================
+                                                                               coef    std err          z      P>|z|      [0.025      0.975]
+--------------------------------------------------------------------------------------------------------------------------------------------
+Intercept                                                                    3.6636      0.261     14.010      0.000       3.151       4.176
+C(position_label)[T.25th_percentile]                                        -1.6392      0.291     -5.637      0.000      -2.209      -1.069
+C(position_label)[T.50th_percentile]                                        -1.8203      0.287     -6.337      0.000      -2.383      -1.257
+C(position_label)[T.75th_percentile]                                        -1.9026      0.286     -6.657      0.000      -2.463      -1.342
+C(position_label)[T.end]                                                    -2.1359      0.282     -7.563      0.000      -2.689      -1.582
+C(similarity)[T.low]                                                         0.7757      0.461      1.681      0.093      -0.129       1.680
+C(size)[T.140]                                                              -0.2432      0.350     -0.694      0.487      -0.930       0.443
+C(size)[T.300]                                                              -0.3468      0.343     -1.011      0.312      -1.019       0.326
+C(position_label)[T.25th_percentile]:C(similarity)[T.low]                    1.2774      0.575      2.221      0.026       0.150       2.405
+C(position_label)[T.50th_percentile]:C(similarity)[T.low]                    1.1153      0.548      2.036      0.042       0.041       2.189
+C(position_label)[T.75th_percentile]:C(similarity)[T.low]                    0.3732      0.510      0.732      0.464      -0.627       1.373
+C(position_label)[T.end]:C(similarity)[T.low]                                1.0639      0.525      2.025      0.043       0.034       2.094
+C(position_label)[T.25th_percentile]:C(size)[T.140]                         -0.1836      0.388     -0.473      0.636      -0.945       0.577
+C(position_label)[T.50th_percentile]:C(size)[T.140]                         -0.3050      0.383     -0.796      0.426      -1.056       0.446
+C(position_label)[T.75th_percentile]:C(size)[T.140]                          0.1281      0.385      0.333      0.739      -0.627       0.883
+C(position_label)[T.end]:C(size)[T.140]                                     -0.0948      0.379     -0.250      0.802      -0.837       0.647
+C(position_label)[T.25th_percentile]:C(size)[T.300]                         -0.7414      0.377     -1.967      0.049      -1.480      -0.002
+C(position_label)[T.50th_percentile]:C(size)[T.300]                         -0.6964      0.374     -1.863      0.062      -1.429       0.036
+C(position_label)[T.75th_percentile]:C(size)[T.300]                         -0.3855      0.374     -1.032      0.302      -1.118       0.347
+C(position_label)[T.end]:C(size)[T.300]                                     -0.1175      0.371     -0.317      0.752      -0.845       0.610
+C(similarity)[T.low]:C(size)[T.140]                                         -0.2155      0.600     -0.359      0.719      -1.391       0.960
+C(similarity)[T.low]:C(size)[T.300]                                         -1.0756      0.547     -1.965      0.049      -2.149      -0.003
+C(position_label)[T.25th_percentile]:C(similarity)[T.low]:C(size)[T.140]    -0.4182      0.726     -0.576      0.565      -1.841       1.005
+C(position_label)[T.50th_percentile]:C(similarity)[T.low]:C(size)[T.140]    -0.1891      0.698     -0.271      0.787      -1.557       1.179
+C(position_label)[T.75th_percentile]:C(similarity)[T.low]:C(size)[T.140]     0.6893      0.683      1.009      0.313      -0.650       2.028
+C(position_label)[T.end]:C(similarity)[T.low]:C(size)[T.140]                 0.4548      0.692      0.657      0.511      -0.902       1.812
+C(position_label)[T.25th_percentile]:C(similarity)[T.low]:C(size)[T.300]    -0.1661      0.663     -0.251      0.802      -1.465       1.133
+C(position_label)[T.50th_percentile]:C(similarity)[T.low]:C(size)[T.300]     0.0059      0.638      0.009      0.993      -1.244       1.256
+C(position_label)[T.75th_percentile]:C(similarity)[T.low]:C(size)[T.300]     0.6457      0.607      1.063      0.288      -0.545       1.836
+C(position_label)[T.end]:C(similarity)[T.low]:C(size)[T.300]                 0.3885      0.625      0.622      0.534      -0.836       1.613
+============================================================================================================================================
