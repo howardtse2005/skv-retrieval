@@ -2,7 +2,7 @@
 
 This repo contains the code implementation for my HKU Department of Psychology's PSYC2036 final essay. The report:
 
-
+[View the full PDF document](./HowardTse_PSYC2036A_Essay.pdf)
 ## Setup
 
 The intended environment is `skv_retrieval` with Python 3.12:
